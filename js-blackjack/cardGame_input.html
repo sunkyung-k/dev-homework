@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>김선경 - 블랙잭 게임 input</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard Variable', sans-serif;
+        }
+        html, body {
+            color: #222;
+            background: #f4f6f8;
+        }
+        .container {
+            max-width: 680px;
+            margin: 60px auto;
+            padding: 32px 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .form-wrap {
+            display: flex;
+            margin-bottom: 40px;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-item label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 12px;
+            border: 1px solid #d1d5db;
+            font-size: 16px;
+            color: #111827;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease; 
+        }
+        input[type="number"]:focus {
+            border-color: #2f80ed;
+            box-shadow: 0 0 0 1px #a3a3a3;
+            box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
+        }
+        input:read-only {
+            color: #6b7280;
+            border-color: #e5e7eb;
+            background-color: #f4f6f8;
+            cursor: not-allowed;
+        }
+        input::placeholder {
+            color: #ccc;
+        }
+        .btn-wrap {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px 0;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            border-radius: 8px;
+            background-color: #2f80ed;
+            cursor: pointer;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #1c64f2;
+        }
+        .btn:disabled {
+            background-color: #cfd8e3;
+            color: #fff;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .result {
+            margin-top: 50px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 10px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        thead th {
+            background-color: #f5f5f5;
+        }
+        #winner {
+            margin-top: 24px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            background-color: #eaf4ff;
+            color: #222;
+        }
+        #end-txt {
+            margin-top: 20px;
+            font-size: 15px;
+            text-align: center;
+            color: #555;
+        }
+        #end-txt strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        #btn-reset {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <!-- 시작 화면 -->
+        <div class="form-wrap">
+            <div class="form-item">
+                <label for="input1">플레이어 번호 입력 1</label>
+                <input id="input1" type="number" placeholder="1~11" oninput="twoDigitLimit(this);setPlayerDeck();" />
+            </div>
+            <div class="form-item">
+                <label for="input2">플레이어 번호 입력 2</label>
+                <input id="input2" type="number" placeholder="1~11" oninput="twoDigitLimit(this);setPlayerDeck();" />
+            </div>
+        </div>
+        <div class="btn-wrap">
+            <button type="button" id="btn-start" class="btn" onclick="startPlay();" disabled>▶️ 게임 시작</button>
+            <button type="button" id="btn-reset" class="btn" onclick="resetGame(this);">🔁 다시 시작</button>
+        </div>
+
+        <!-- 결과 화면-->
+        <div class="result">
+            <p id="winner"></p>
+            <table>
+                <colgroup>
+                    <col width="33%">
+                    <col width="33%">
+                    <col width="33%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>플레이어</th>
+                        <th>PC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>뽑은 카드</th>
+                        <td><p id="playerCard" class="clearable"></p></td>
+                        <td><p id="pcCard" class="clearable"></p></td>
+                    </tr>
+                    <tr>
+                        <th>숫자 합</th>
+                        <td><p id="playerSum" class="clearable"></p></td>
+                        <td><p id="pcSum" class="clearable"></p></td>
+                    </tr>
+                    <tr>
+                        <th>21까지 남은 점수</th>
+                        <td><p id="playerGap" class="clearable"></p></td>
+                        <td><p id="pcGap" class="clearable"></p></td>
+                    </tr>
+                    <tr>
+                        <th>소유 금액</th>
+                        <td><p id="playerMoney"></p></td>
+                        <td><p id="pcMoney"></p></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="end-txt"></p>
+        </div>
+    </div>
+</body>
+<script>
+// 1~11 사이 체크
+function isValidNumber(n) {
+    return n >= 1 && n <= 11;
+}
+
+// input 입력 시 게임시작 버튼 제어
+function setPlayerDeck() {
+    const input1 = Number(document.querySelector('#input1').value);
+    const input2 = Number(document.querySelector('#input2').value);
+    const btn = document.querySelector('#btn-start');
+    btn.disabled = !(isValidNumber(input1) && isValidNumber(input2));
+}
+
+// input 2자리수까지만 입력
+function twoDigitLimit(ipt) {
+    if (ipt.value.length > 2) {
+        ipt.value = ipt.value.slice(0, 2);
+    }
+}
+
+// 플레이어 - 카드 추가 선택 시 1장 랜덤 추출 
+function drawOne(deck) {
+    const index = Math.floor(Math.random() * deck.length);
+    const card = deck[index];
+    deck.splice(index, 1);
+    return card;
+}
+
+// 카드 합 계산
+function calcSum(cards) {
+    return cards.reduce((sum, n) => sum + n, 0);
+}
+
+// 선언
+let fullDeck = [];
+let deckPlayer = [];
+let deckPc = [];
+let player = [];
+let pc = [];
+let playerMoney = 100000;
+let pcMoney = 100000;
+
+// 게임 시작
+let countGame = 0;
+function startPlay() {
+    countGame++;
+    if (countGame > 0) document.querySelector('#btn-reset').style.display = 'block';
+
+    const ipt1 = Number(document.querySelector('#input1').value);
+    const ipt2 = Number(document.querySelector('#input2').value);
+
+    // 카드 덱 생성
+    fullDeck = [];
+    for (let i = 1; i <= 11; i++) {
+        fullDeck.push(i, i); // 두 벌 생성
+    }
+
+    // 덱 복사
+    deckPlayer = fullDeck.slice();
+    deckPc = fullDeck.slice();
+
+    // 카드 분배
+    player.push(ipt1, ipt2);
+    pc = [drawOne(deckPc), drawOne(deckPc)];
+
+    // 카드 출력
+    document.querySelector('#playerCard').textContent = player.join(', ');
+    document.querySelector('#pcCard').textContent = pc.join(', ');
+
+    // 입력창 비우기 + 버튼 잠금
+    document.querySelector('#btn-start').disabled = true;
+    document.querySelectorAll('input').forEach(input => input.readOnly = true);
+    
+    // 카드 추가 여부 묻기
+    setTimeout(addCardConfirm, 300);
+}
+
+// 카드 더 받을지 confirm, 받으면 push
+function addCardConfirm() {
+    const isConfirm = confirm('카드를 더 받으시겠습니까?');
+    if (isConfirm) {
+        const newCard = drawOne(deckPlayer);
+        player.push(newCard);
+        document.querySelector('#playerCard').textContent = player.join(', ');
+    }
+    resultPlay();
+}
+
+// 결과 출력
+function resultPlay() {
+    const playerSum = calcSum(player);
+    const pcSum = calcSum(pc);
+
+    const playerGap = Math.abs(21 - playerSum);
+    const pcGap = Math.abs(21 - pcSum);
+
+    // 합계 출력
+    document.querySelector('#playerSum').textContent = playerSum;
+    document.querySelector('#pcSum').textContent = pcSum;
+    document.querySelector('#playerGap').textContent = playerGap;
+    document.querySelector('#pcGap').textContent = pcGap;
+
+    // 승패 판단
+    let winnerText = '';
+    if (playerGap < pcGap) {
+        winnerText = '👑 플레이어 승! 👑';
+        playerMoney += 50000;
+        pcMoney -= 50000;
+    } else if (playerGap > pcGap) {
+        winnerText = '👑 PC 승! 👑';
+        pcMoney += 50000;
+        playerMoney -= 50000;
+    } else {
+        winnerText = '❌ 동점 ❌ 다시 진행';
+    }
+
+    // 승패 출력
+    document.querySelector('#winner').textContent = winnerText;
+    
+    // 금액 출력
+    document.querySelector('#playerMoney').textContent = playerMoney.toLocaleString() + '원';
+    document.querySelector('#pcMoney').textContent = pcMoney.toLocaleString() + '원';
+
+    // 게임 종료, 다시 시작 버튼 제어
+    if (playerMoney <= 0 || pcMoney <= 0) {
+        document.querySelector('#end-txt').innerHTML = `
+            <strong>💸 게임 종료! 한 쪽의 금액이 0원이 되었습니다. 💸 </strong>
+            페이지를 새로고침하면 게임이 초기화됩니다.
+        `;
+        document.querySelector('#btn-reset').disabled = true;
+        document.querySelector('#btn-reset').style.display = 'none';
+    } else {
+        document.querySelector('#btn-reset').disabled = false;
+        document.querySelector('#btn-reset').style.display = 'block';
+    }
+}
+
+// 초기화 (입력값, 카드숫자, 결과)
+function resetGame() {
+    player = [];
+    pc = [];
+    document.querySelectorAll('.clearable').forEach(td => td.textContent = '');
+    document.querySelector('#winner').textContent = '';
+    document.querySelector('#btn-start').disabled = false;
+    document.querySelectorAll('input').forEach(input => {
+        input.value = '';
+        input.readOnly = false;
+    });
+    document.querySelector('#btn-reset').disabled = true;
+    document.querySelector('#input1').focus();
+}
+</script>
+</html>

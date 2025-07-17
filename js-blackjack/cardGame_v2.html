@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>김선경 - 블랙잭 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            background-color: #c8d8ff;
+        }
+        .container {
+            max-width: 600px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .rule .tit { 
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .rule ul {
+            margin-top: 10px;
+        }
+        .rule li {
+            margin-top: 6px;
+            font-size: 13px;
+            list-style: none;
+            color: #444;
+        }
+        .sec {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 7px;
+            background-color: #fff;
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.05);
+        }
+        .sec:first-child {
+            margin-top: 0;
+        }
+        .sec:first-child + .sec {
+            margin-top: 30px;
+        }
+        .clearable {
+            font-size: 14px;
+            line-height: 24px;
+        }
+        .btn {
+            padding: 6px 15px;
+            border-radius: 5px;
+            outline: none;
+            background-color: #301452;
+            border: 1px solid #301452;
+            color: #fff;
+            cursor: pointer;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+        }
+        .btn:hover {
+            border: 1px solid #301452;
+            background-color: #fff;
+            color: #301452;
+            
+        }
+        #btn-refresh {
+            display: none;
+        }
+    </style>
+<body>
+    <main class="container">
+        <div class="sec rule">
+            <p class="tit">🎮 게임 규칙 🎮</p>
+            <ul>
+                <li>✨ 플레이어 vs PC 대결</li>
+                <li>✨ 처음에 각자 카드 2장씩 배분 (1~11 숫자, 총 22장)</li>
+                <li>✨ 플레이어는 카드 1장을 추가로 받을 수 있음</li>
+                <li>✨ 카드 합이 21에 더 가까운 쪽이 승리</li>
+                <li>✨ 시작 금액은 각 100,000원</li>
+                <li>✨ 승리 시 +50,000원 / 패배 시 -50,000원</li>
+                <li>✨ 한쪽의 돈이 0원이 되면 게임 종료</li>
+            </ul>
+        </div>
+        <div class="sec sec1">
+            <button type="button" id="btn-start" class="btn" onclick="startPlay();">게임 시작</button>
+            <button type="button" id="btn-refresh" class="btn" onclick="window.location.reload();">게임 초기화</button>
+        </div>
+        <div class="sec sec2">
+            <p id="player" class="clearable"></p>
+            <p id="pc" class="clearable"></p>
+        </div>
+        <div class="sec sec3">
+            <p id="playerMoney" class="clearable"></p>
+            <p id="pcMoney" class="clearable"></p>
+        </div>
+        <div class="sec sec4">
+            <p id="winner" class="clearable"></p>
+        </div>
+        
+    </div>
+</body>
+<script>
+// 선언
+let fullDeck = [];
+let deck = [];
+let player = [];
+let pc = [];
+let playerMoney = 100000;
+let pcMoney = 100000;
+
+// 카드 개수 세팅 
+function setCard() {
+    fullDeck = [];
+    for (let i = 1; i <= 11; i++) {
+        fullDeck.push(i, i); // 1~11 두 벌
+    }
+}
+
+// 카드 1장 랜덤 뽑기
+function drawOne(deck) {
+    const index = Math.floor(Math.random() * deck.length);
+    const card = deck[index];
+    deck.splice(index, 1); // 뽑은 카드 제거
+    return card;
+}
+
+// 카드 합산
+function calcSum(cards) {
+    console.log('cards',cards);
+    return cards.reduce((sum, n) => sum + n, 0);
+}
+
+// 문구 리셋
+function resetText() {
+    document.querySelectorAll('.clearable').forEach(el => {
+        el.textContent = '';
+    });
+}
+
+// 첫번째 판
+function startPlay() {
+    setCard();
+    resetText();
+
+    if (playerMoney <= 0 || pcMoney <= 0) {
+        alert('게임 종료! 돈이 0원이 되었습니다.');
+        document.querySelector('#btn-start').style.display = 'none';
+        document.querySelector('#btn-refresh').style.display = 'block';
+        return;
+    }
+
+    deckPlayer = fullDeck.slice();
+    deckPc = fullDeck.slice();
+    player = [drawOne(deckPlayer), drawOne(deckPlayer)];
+    pc = [drawOne(deckPc), drawOne(deckPc)];
+
+    console.log('♦️ 초기 플레이어 카드', fullDeck);
+    console.log('♣️ 초기 PC 카드', fullDeck);
+
+    document.querySelector('#player').textContent = `♦️ 플레이어 카드 : ${player}`;
+    document.querySelector('#pc').textContent = `♣️ PC 카드 : ${pc}`;
+
+    setTimeout(() => {
+        addCardConfirm();
+    }, 200);
+}
+
+let isConfirming = false;
+function addCardConfirm() {
+    const isConfirm = confirm ('카드를 더 받으시겠습니까?');
+    if(isConfirm) {
+        player.push(drawOne(deckPlayer)); // 추가로 카드 더받기
+        console.log('♦️ 남은 플레이어 카드',deckPlayer);
+        console.log('♣️ 남은 PC 카드',deckPc);
+    } 
+    resultPlay();
+}
+
+let playerSum;
+let pcSum;
+
+// 결과
+function resultPlay() {
+    playerSum = calcSum(player);
+    pcSum = calcSum(pc);
+
+    document.querySelector('#player').textContent = `♦️ 플레이어 카드 : ${player} (합: ${playerSum})`;
+    document.querySelector('#pc').textContent = `♣️ PC 카드 : ${pc} (합: ${pcSum})`;
+
+    // 합이 21과 가까워야 승리
+    const playerGap = Math.abs(21 - calcSum(player));
+    const pcGap = Math.abs(21 - calcSum(pc));
+
+    if (playerGap < pcGap) {
+        document.querySelector('#winner').innerHTML = `
+            ♦️ 플레이어의 카드 합 : 21까지 <strong>${playerGap}</strong> 차이<br>
+            ♣️ PC의 카드 합 : 21까지 <strong>${pcGap}</strong> 차이<br><br>
+            <strong>👑 플레이어 승! 👑</strong>`;
+        playerMoney += 50000;
+        pcMoney -= 50000;
+    } else if (playerGap > pcGap) {
+        document.querySelector('#winner').innerHTML = `
+            ♦️ 플레이어의 카드 합 : 21까지 <strong>${playerGap}</strong> 차이<br>
+            ♣️ PC의 카드 합 : 21까지 <strong>${pcGap}</strong> 차이<br><br>
+            <strong>👑 PC 승! 👑</strong>`;
+        pcMoney += 50000;
+        playerMoney -= 50000;
+    } else if (playerGap === pcGap) {
+        document.querySelector('#winner').innerHTML = '❌ 동점 ❌ 다시 진행';
+    }
+
+    document.querySelector('#playerMoney').textContent = `♦️ 플레이어 현재 금액 : ${playerMoney.toLocaleString()}`;
+    document.querySelector('#pcMoney').textContent = `♣️ PC 현재 금액 : ${pcMoney.toLocaleString()}`;
+}
+</script>
+</html>

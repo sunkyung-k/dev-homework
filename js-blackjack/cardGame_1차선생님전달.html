@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카드 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        button {
+            cursor: pointer;
+        }
+
+        .container {
+            padding: 20px;
+        }
+        .sec {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e7e7e7;
+            border-radius: 5px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 20px;
+        }
+
+        .btn {
+            padding: 6px 15px;
+            border-radius: 5px;
+            outline: none;
+            border: 1px solid #035bff;
+            color: #035bff;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #035bff;
+            color: #fff;
+        }
+        #btn-card,
+        #btn-replay {
+            display: none;
+        }
+        #btn-replay {
+            margin-top: 5px;
+        }
+        #winner {
+            font-weight: 700;
+        }
+
+    </style>
+<body>
+    <main class="container">
+        <div class="sec sec1">
+            <button type="button" id="btn-start" class="btn" onclick="startPlay();">게임 스타트</button>
+        </div>
+        <div class="sec sec2">
+            <p id="player"></p>
+            <p id="pc"></p>
+            <button type="button" id="btn-replay"s class="btn" onclick="resultPlay();">결과 보기</button>
+        </div>
+        <div class="sec sec3">
+            <p id="playerMoney"></p>
+            <p id="pcMoney"></p>
+        </div>
+        <div class="sec sec4">
+            <p id="winner"></p>
+        </div>
+    </div>
+</body>
+<script>
+// 카드 개수 세팅 
+let fullDeck = [];
+for (let i = 1; i <= 11; i++) {
+    fullDeck.push(i, i); // 1~11 두 벌
+}
+
+let playerMoney = 100000;
+let pcMoney = 100000;
+
+// 카드 1장 랜덤 뽑기
+function drawOne(deck) {
+    const index = Math.floor(Math.random() * deck.length);
+    const card = deck[index];
+    deck.splice(index, 1); // 뽑은 카드 제거
+    return card;
+}
+
+// 카드 합산
+function calcSum(cards) {
+    return cards.reduce((sum, n) => sum + n, 0);
+}
+
+// 선언
+let deck = [];
+let player = [];
+let pc = [];
+
+// 문구 리셋
+function resetText() {
+    document.querySelector('#player').textContent = '';
+    document.querySelector('#pc').textContent = '';
+    document.querySelector('#playerMoney').textContent = '';
+    document.querySelector('#pcMoney').textContent = '';
+    document.querySelector('#winner').textContent = '';
+}
+
+// 첫번째 판
+function startPlay() {
+    resetText();
+
+    if (playerMoney <= 0 || pcMoney <= 0) {
+        alert('게임 종료! 돈이 바닥났습니다.');
+        document.querySelector('#btn-start').disabled;
+
+        return;
+    }
+
+    deck = fullDeck.slice();
+
+    player = [drawOne(deck), drawOne(deck)];
+    pc = [drawOne(deck), drawOne(deck)];
+
+    document.querySelector('#player').textContent = `플레이어가 뽑은 카드 : ${player}`;
+    document.querySelector('#pc').textContent = `pc 뽑은 카드 : ${pc}`;
+
+    setTimeout(() => {
+        addCardConfirm();
+    }, 300);
+}
+
+function addCardConfirm() {
+    const isConfirm = confirm ('카드를 더 받으시겠습니까?');
+    if(isConfirm) {
+        addCard();
+    } else {
+        resultPlay();
+    }
+}
+
+let playerSum;
+let pcSum;
+
+// 추가 카드 받기
+function addCard() {
+    player.push(drawOne(deck));
+
+    playerSum = calcSum(player);
+    pcSum = calcSum(pc);
+
+    document.querySelector('#btn-replay').style.display = 'block';
+
+    document.querySelector('#player').textContent = `플레이어 카드: ${player.join(', ')} (합: ${playerSum})`;
+    document.querySelector('#pc').textContent = `PC 카드: ${pc.join(', ')} (합: ${pcSum})`
+}
+
+// 결과
+function resultPlay() {
+    document.querySelector('#btn-replay').style.display = 'none';
+
+    if (playerSum === pcSum) {
+        document.querySelector('#winner').textContent = '❌ 동점 ❌ 다시 진행';
+        document.querySelector('#playerMoney').textContent = `플레이어 현재 돈 : ${playerMoney}`;
+        document.querySelector('#pcMoney').textContent = `pc 현재 돈 : ${pcMoney}`;
+        return;
+    }
+
+    if (calcSum(player) > calcSum(pc)) {
+        document.querySelector('#winner').textContent = '👑 플레이어 승! 👑';
+        playerMoney += 50000;
+        pcMoney -= 50000;
+    } else if (calcSum(pc) > calcSum(player)) {
+        document.querySelector('#winner').textContent = '👑 PC 승! 👑';
+        pcMoney += 50000;
+        playerMoney -= 50000;
+    }
+
+    document.querySelector('#playerMoney').textContent = `플레이어 현재 돈 : ${playerMoney}`;
+    document.querySelector('#pcMoney').textContent = `pc 현재 돈 : ${pcMoney}`;
+}
+</script>
+</html>

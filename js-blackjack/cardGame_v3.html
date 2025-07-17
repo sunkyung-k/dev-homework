@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>김선경 - 블랙잭 게임</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard Variable', sans-serif;
+        }
+        body {
+            color: #222;
+            background: #f4f6f8;
+        }
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .btn {
+            display: block;
+            padding: 14px 32px;
+            margin: 20px auto;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            border-radius: 8px;
+            background: #2f80ed;
+            cursor: pointer;
+        }
+        .btn:hover:not(:disabled) {
+            background: #1c64f2;
+        }
+        .btn:disabled {
+            background: #cfd8e3;
+            color: #fff;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .sec-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .sec-tit {
+            margin-bottom: 18px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            color: #1f2937;
+        }
+        .sec-tit span { 
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            color: #777;
+        }
+        .sec-cont {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .info-box {
+            flex: 1 1 48%;
+            padding: 18px 16px;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f9fafb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .info-box .label {
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            font-weight: 700;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .info-box .result {
+            margin-top: 6px;
+            font-size: 17px;
+            line-height: 1.5;
+            color: #1e293b;
+            white-space: pre-line;
+        }
+        #winner {
+            margin-top: 24px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            background-color: #eaf4ff;
+            color: #222;
+        }
+        .pop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            /* display: flex; */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .pop-inner {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            animation: fadeInPop 0.3s ease;
+        }
+        .pop-inner .tit {
+            margin-bottom: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .pop-inner .txt {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+        @keyframes fadeInPop {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <button type="button" id="btn-start" class="btn" onclick="startPlay();">게임 시작</button>
+        <section class="sec-card">
+            <p class="sec-tit">뽑은 카드</p>
+            <div class="sec-cont">
+                <div class="info-box" id="player">
+                    <p class="label">플레이어</p>
+                    <p class="result clearable"></p>
+                </div>
+                <div class="info-box" id="pc">
+                    <p class="label">PC</p>
+                    <p class="result clearable"></p>
+                </div>
+            </div>
+        </section>
+        <section class="sec-card">
+            <p class="sec-tit">
+                21까지 남은 점수
+                <span>* 숫자가 작으면 승리</span>
+            </p>
+            <div class="sec-cont">
+                <div class="info-box" id="playerResult">
+                    <p class="label">플레이어</p>
+                    <p class="result clearable"></p>
+                </div>
+                <div class="info-box" id="pcResult">
+                    <p class="label">PC</p>
+                    <p class="result clearable"></p>
+                </div>
+            </div>
+            <p id="winner"></p>
+        </section>
+        <section class="sec-card">
+            <p class="sec-tit">자산 현황</p>
+            <div class="sec-cont">
+                <div class="info-box" id="playerMoney">
+                    <p class="label">플레이어</p>
+                    <p class="result"></p>
+                </div>
+                <div class="info-box" id="pcMoney">
+                    <p class="label">PC</p>
+                    <p class="result"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- game over -->
+    <div class="pop">
+        <div class="pop-inner">
+            <p class="tit">💸 게임 종료! 한 쪽의 금액이 0원이 되었습니다. 💸 </p>
+            <p class="txt">페이지를 새로고침하면 게임이 초기화됩니다.</p>
+        </div>
+    </div>
+</body>
+<script>
+// 선언
+let fullDeck = [];
+let deck = [];
+let player = [];
+let pc = [];
+let playerMoney = 100000;
+let pcMoney = 100000;
+
+// 카드 개수 세팅 
+function setCard() {
+    fullDeck = [];
+    for (let i = 1; i <= 11; i++) {
+        fullDeck.push(i, i); // 1~11 두 벌
+    }
+}
+
+// 카드 1장 랜덤 뽑기
+function drawOne(deck) {
+    const index = Math.floor(Math.random() * deck.length);
+    const card = deck[index];
+    deck.splice(index, 1); // 뽑은 카드 제거
+    return card;
+}
+
+// 카드 합산
+function calcSum(cards) {
+    return cards.reduce((sum, n) => sum + n, 0);
+}
+
+// 문구 리셋
+function resetText() {
+    document.querySelectorAll('.clearable').forEach(el => {
+        el.textContent = '';
+    });
+}
+
+// 첫번째 판
+function startPlay() {
+    // 게임 종료 (돈 소진)
+    if (playerMoney <= 0 || pcMoney <= 0) {
+        document.querySelector('.pop').style.display = 'flex';
+        document.querySelector('#btn-start').disabled = true;
+        return;
+    } else {
+        setCard();
+        resetText();
+    }
+
+    deckPlayer = fullDeck.slice();
+    deckPc = fullDeck.slice();
+    player = [drawOne(deckPlayer), drawOne(deckPlayer)];
+    pc = [drawOne(deckPc), drawOne(deckPc)];
+
+    console.log('초기 플레이어 카드', fullDeck);
+    console.log('초기 PC 카드', fullDeck);
+
+    document.querySelector('#player .result').textContent = player.join(', ');
+    document.querySelector('#pc .result').textContent = pc.join(', ');
+
+    setTimeout(() => {
+        addCardConfirm();
+    }, 300);
+}
+
+function addCardConfirm() {
+    const isConfirm = confirm ('카드를 더 받으시겠습니까?');
+    if(isConfirm) {
+        player.push(drawOne(deckPlayer)); // 추가로 카드 더받기
+        console.log('남은 플레이어 카드',deckPlayer);
+        console.log('남은 PC 카드',deckPc);
+    } 
+    resultPlay();
+}
+
+let playerSum;
+let pcSum;
+
+// 결과
+function resultPlay() {
+    playerSum = calcSum(player);
+    pcSum = calcSum(pc);
+
+    document.querySelector('#player .result').innerHTML = `${player.join(', ')} <br /> (합: ${playerSum})`;
+    document.querySelector('#pc .result').innerHTML = `${pc.join(', ')} <br /> (합: ${pcSum})`;
+
+    // 합이 21과 가까워야 승리
+    const playerGap = Math.abs(21 - calcSum(player));
+    const pcGap = Math.abs(21 - calcSum(pc));
+
+    if (playerGap < pcGap) {
+        document.querySelector('#playerResult .result').textContent = playerGap;
+        document.querySelector('#pcResult .result').textContent = pcGap;
+        document.querySelector('#winner').textContent = '👑 플레이어 승! 👑';
+        playerMoney += 50000;
+        pcMoney -= 50000;
+    } else if (playerGap > pcGap) {
+        document.querySelector('#playerResult .result').textContent = playerGap;
+        document.querySelector('#pcResult .result').textContent = pcGap;
+        document.querySelector('#winner').textContent = '👑 PC 승! 👑';
+        pcMoney += 50000;
+        playerMoney -= 50000;
+    } else if (playerGap === pcGap) {
+        document.querySelector('#winner').innerHTML = '❌ 동점 ❌ 다시 진행';
+    }
+
+    document.querySelector('#playerMoney .result').textContent = `${playerMoney.toLocaleString()}원`;
+    document.querySelector('#pcMoney .result').textContent = `${pcMoney.toLocaleString()}원`;
+}
+</script>
+</html>
