@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>김선경 - 가위바위보</title>
+</head>
+<body>
+</body>
+
+<script>
+const rpsArr = ['가위', '바위', '보'];
+const scoreObj = {
+    player1: 0,
+    player2: 0,
+    player3: 0,
+};
+
+// 랜덤 가위바위보 돌리기
+const getRandom = (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// 10번의 승률이 날때까지 게임 반복
+let gameCount = 0;
+while (gameCount < 10) {
+    // 랜덤 가위바위보
+    const player1Hand = getRandom(rpsArr);
+    const player2Hand = getRandom(rpsArr);
+    const player3Hand = getRandom(rpsArr);
+
+    let tempWinner;
+    let tempWinnerHand;
+    let finalWinner;
+
+    // 첫번째 게임 (player1 vs player2)
+    if (player1Hand === player2Hand) { // 비김
+        continue;
+    }
+
+    if ((player1Hand === '가위' && player2Hand === '보') ||
+        (player1Hand === '바위' && player2Hand === '가위') ||
+        (player1Hand === '보' && player2Hand === '바위')) 
+    {
+        tempWinner = 'player1';
+        tempWinnerHand = player1Hand;
+    } else {
+        tempWinner = 'player2';
+        tempWinnerHand = player2Hand;
+    }
+
+    // 결승전 게임 (tempWinner vs player3)
+    if (tempWinnerHand === player3Hand) { // 비김
+        continue;
+    } 
+
+    if (
+        (tempWinnerHand === '가위' && player3Hand === '보') ||
+        (tempWinnerHand === '바위' && player3Hand === '가위') ||
+        (tempWinnerHand === '보' && player3Hand === '바위')
+    ) {
+        finalWinner = tempWinner;
+    } else {
+        finalWinner = 'player3';
+    }
+
+    // 최종 우승
+    scoreObj[finalWinner]++;
+    gameCount++;
+}
+
+console.log('👑 최종 결과 : ', scoreObj);
+
+// 최다 우승자
+const scoreArr = Object.entries(scoreObj);
+scoreArr.sort((a, b) => b[1] - a[1]);
+
+const sortedObj = Object.fromEntries(scoreArr);
+
+console.log('👑 점수 높은 순 : ', sortedObj);
+
+const topWinner = scoreArr[0][0];
+const topScore = scoreArr[0][1];
+
+if (scoreArr[0][1] === scoreArr[1][1]) {
+    let sameWinner = scoreArr[1][0];
+    console.log(`👑 최다 우승자 (공동 우승) : ${topWinner}, ${sameWinner}`);
+} else {
+    console.log(`👑 최다 우승자 : ${topWinner}`);
+}
+</script>
+</html>
