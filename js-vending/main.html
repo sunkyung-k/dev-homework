@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>김선경 - 자판기 프로그램</title>
+    <!-- head 안에 추가 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+    <style>
+        /* reset */
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard Variable', sans-serif;
+            font-size: 14px; 
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            overflow-y: auto;
+        }
+        body {
+            padding: 15px;
+            color: #f0f0f0;
+            background-color: #1e1e2f;
+        }
+        button {
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* layout */
+        #wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c2c3e;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+        }
+        #header {
+            padding: 18px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            color: #ffffff;
+            background-color: #3b3b54;
+            letter-spacing: 0.5px;
+        }
+
+        /* ui */
+        .sec {
+            padding: 20px 16px;
+            text-align: center;
+            border-top: 1px solid #444;
+        }
+        .sec-tit {
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+            text-align: center;
+            color: #ffffff;
+        }
+        .sec-item + .sec-item {
+            margin-top: 20px;
+        }
+
+        /* group */
+        .group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* form */
+        input {
+            padding: 8px 10px;
+            width: 140px;
+            border: 1px solid #666;
+            font-size: 0.9rem;
+            color: #222;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        input::placeholder {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox  */
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+
+        /* btn */
+        #container button {
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            color: #f8f8f2;
+            background-color: #44475a;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: 0.2s ease;
+        }
+        #container button:hover {
+            background-color: #5a5e76;
+        }
+        .btn {
+            width: 100%;
+        }
+
+        /* table */
+        .table {
+            width: 100%;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: #f8f8f8;
+            border-collapse: collapse;
+            background-color: #1e1e2f;
+        }
+        .table th,
+        .table td {
+            padding: 8px 10px;
+            border: 1px solid #3e3e5c;
+            text-align: center;
+        }
+        .table thead {
+            font-weight: 600;
+            background-color: #3a3a52;
+        }
+        .table tbody tr:nth-child(even) {
+            background-color: #2a2a40;
+        }
+        .table button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            background-color: #6272a4;
+        }
+        .table button:hover {
+            background-color: #7083c2;
+        }
+        .btn-save {
+            display: none;
+            margin-top: 10px;
+        }
+        input[name="stock-input"] {
+            width: 70px;
+            text-align: center;
+        }
+
+        /* 제품 추가 폼 */
+        .add-product {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+        }
+        .add-product input {
+            width: 100%;
+            color: #fff;
+            background-color: #1e1e2f;
+        }
+
+        /* 숨김 처리 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 팝업 */
+        .pop {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .pop-inner {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px 24px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        .pop-close {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            color: #fff;
+            font-size: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .pop-close svg {
+            width: 100%;
+            height: 100%;
+        }
+        .pop-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .pop-txt {
+            font-size: 12px;
+            color: #666;
+        }
+        .pop-inner input {
+            border: 1px solid #ddd;
+            transition: border-color 0.2s;
+        }
+        .pop-inner input:focus {
+            border-color: #007bff;
+        }
+        .pop-inner .btn {
+            width: 100px;
+            padding: 8px 4px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            transition: opacity 0.2s;
+        }
+        .pop-inner .btn:hover {
+            opacity: 0.8;
+        }
+        .pop-footer {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pop-footer .btn-cancel {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        /* 음료 선택 */
+        .state-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .state-box dt {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            width: 72px;
+            font-weight: bold;
+        }
+        .state-box dt::before {
+            content: "-";
+        }
+        .state-boxr dt::after {
+            content: ":";
+        }
+        .state-box dd {
+            width: calc(100% - 72px - 6px);
+        }
+        .pop-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .pop-form input {
+            flex: 1;
+            text-align: center;
+        }
+        .pop-form label {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .pop-form .btn-apply {
+            width: 100px;
+        }
+        .pop-result {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+
+        /* 재고 변경 */
+        .pop[data-pop="pop-prod"] .pop-inner {
+            max-width: 600px;
+        }
+        .add-form {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2px;
+            margin-top: 10px;
+        }
+        .add-form input {
+            width: calc(100% - 2px);
+        }
+
+
+        /* 수익 보기 */
+        .list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .list-item strong {
+            flex: 1;
+            font-weight: 500;
+        }
+        .list + .list {
+            padding-top: 20px;
+            border-top: 2px solid #222;
+            font-size: 20px;
+        }
+        .list + .list .list-item {
+            border-bottom: 0;
+            font-weight: 700;
+        }
+        .list + .list span {
+            font-size: 18px;
+        }
+        .list + .list .list-item strong {
+            font-size: 18px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrap">
+        <header id="header">자판기 프로그램</header>
+        <main id="container">
+            <!-- 메인 메뉴 선택 화면 -->
+            <section class="sec" data-section="main">
+                <h2 class="sec-tit">메인 메뉴</h2>
+                <div class="group">
+                    <button class="btn btn-mode" data-mode="user" onclick="goSection('user');">👷🏻 사용자</button>
+                    <button class="btn btn-mode" data-mode="admin" onclick="goSection('admin');">⚙️ 관리자</button>
+                </div>
+            </section>
+
+            <!-- 사용자 메뉴 -->
+            <section class="sec hidden" data-section="user">
+                <h2 class="sec-tit">👷🏻 사용자 - 음료 선택</h2>
+                <div class="group">
+                    <div id="card-group" class="group">
+                        <!-- innerHTML ui.js renderUserList(); -->
+                    </div>
+                    <button class="btn btn-back" onclick="goSection('main');">↩️ 메인으로</button>
+                </div>
+            </section>
+
+            <!-- 관리자 메뉴 -->
+            <section class="sec hidden" data-section="admin">
+                <h2 class="sec-tit">⚙️ 관리자</h2>
+                <div class="group">
+                    <button class="btn btn-admin" data-admin="stock" onclick="renderStockPop();">재고 변경</button>
+                    <button class="btn btn-admin" data-admin="product" onclick="renderProdPop();">제품 변경</button>
+                    <button class="btn btn-admin" data-admin="profit" onclick="renderRevenue();">수익 보기</button>
+                    <button class="btn btn-back" onclick="goSection('main');">↩️ 메인으로</button>
+                </div>
+                <table class="table">
+                    <thead data-id="table-thead">
+                        <tr>
+                            <th>번호</th>
+                            <th>제품명</th>
+                            <th>가격</th>
+                            <th>재고</th>
+                        </tr>
+                    </thead>
+                    <tbody data-id="table-tbody">
+                        <!-- innerHTML ui.js renderTable() -->
+                    </tbody>
+                </table>
+                <button type="button" class="btn-save" onclick="saveStock();">저장</button>
+                <div class="add-product">
+                    <input type="text" placeholder="제품명" id="product-name" name="" aria-label="제품명" />
+                    <input type="number" placeholder="가격" id="product-price" name="" aria-label="가격" />
+                    <input type="number" placeholder="재고" id="product-stock" name="" aria-label="재고" />
+                    <button class="btn btn-add" onclick="addProd();">추가</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- 음료 선택 팝업 -->
+    <div class="pop" data-pop="pop-buy">
+        <div class="pop-inner">
+            <button type="button" class="pop-close" onclick="closeBuyPop();">✖</button>
+            <h3 class="pop-title">음료 선택</h3>
+            <dl id="state-box" class="state-box">
+                <!--- innerHTML ui.js currentState(); -->
+            </dl>
+            <div class="pop-form">
+                <label for="prod-count">개수 선택</label>
+                <input type="number" id="prod-count" name="prod-count" min="1" />
+            </div>
+            <p class="pop-result" id="prod-result"></p>
+            <div class="pop-footer">
+                <button type="button" class="btn btn-confirm" onclick="buyProd();">구매</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- 재고 변경 팝업 -->
+    <div class="pop" data-pop="pop-stock">
+        <div class="pop-inner">
+            <button type="button" class="pop-close" onclick="hidePop();">✖</button>
+            <h3 class="pop-title">재고 변경</h3>
+            <dl id="stock-box" class="list">
+                <!-- innerHTML ui.js renderStockPop() -->
+            </dl>
+            <div class="pop-footer">
+                <button type="button" class="btn btn-confirm" onclick="saveStockPop();">변경</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 제품 변경 팝업 -->
+    <div class="pop" data-pop="pop-prod">
+        <div class="pop-inner">
+            <button type="button" class="pop-close" onclick="hidePop();">✖</button>
+            <h3 class="pop-title">제품 변경</h3>
+            <table class="table" id="prod-table">
+                <thead data-id="table-thead">
+                    <tr>
+                        <th>번호</th>
+                        <th>제품명</th>
+                        <th>가격</th>
+                        <th>재고</th>
+                        <th>삭제</th>
+                    </tr>
+                </thead>
+                <tbody data-id="table-tbody">
+                    <!-- innerHTML ui.js renderProdPop() -->
+                </tbody>
+            </table>
+            <div class="add-form" id="add-form">
+                <div class="prod-name">
+                    <input type="text" id="" name="" placeholder="제품명" />
+                </div>
+                <div class="prod-stock">
+                    <input type="text" id="" name="" placeholder="가격" />
+                </div>
+                <div class="prod-revenue">
+                    <input type="text" id="" name="" placeholder="재고" />
+                </div>
+                <button type="button" class="btn" onclick="addProd();">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수익 보기 팝업 -->
+    <div class="pop" data-pop="pop-revenue">
+        <div class="pop-inner">
+            <button type="button" class="pop-close" onclick="hidePop();">✖</button>
+            <h3 class="pop-title">수익 보기</h3>
+            <div id="rev-box" class="list">
+                <!-- innerHTML ui.js renderRevenue() -->
+            </div>
+            <div id="total" class="list">
+                <!-- innerHTML ui.js renderRevenue() -->
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+// 섹션 이동
+function goSection(sectionName) {
+    const section = document.querySelectorAll('.sec');
+    section.forEach((item) => {
+        item.classList.add('hidden');
+    })
+    document.querySelector(`[data-section="${sectionName}"]`).classList.remove('hidden');
+
+    if (sectionName === 'admin') renderTable();
+    if (sectionName === 'user') renderUserList();
+}
+
+// 공통 팝업
+function showPop(popName,) {
+    document.querySelector(`[data-pop="${popName}"]`).style.display = 'flex';
+    document.querySelector('html, body').style.overflowY = 'hidden';
+}
+function hidePop() {
+    const pop = document.querySelectorAll('.pop');
+    pop.forEach(item => item.style.display = 'none');
+    document.querySelector('html, body').style.overflowY = 'auto';
+}
+
+// 제품 목록
+let products = [
+    { id: 1, name: "콜라", price: 1000, stock: 100, revenue: 0},
+    { id: 2, name: "사이다", price: 1000, stock: 100, revenue: 0},
+    { id: 3, name: "웰치스", price: 2000, stock: 50, revenue: 0},
+    { id: 4, name: "핫식스", price: 2000, stock: 30, revenue: 0},
+    { id: 5, name: "헛개수", price: 2000, stock: 10, revenue: 0},
+];
+console.log(products);
+
+/**
+ * user 
+ */
+function renderUserList() {
+    const div = document.querySelector('#card-group');
+    div.innerHTML = ''; // 버튼들 초기화
+    products.forEach((item) => {
+        div.innerHTML += `
+            <button class="btn btn-drink" data-id="${item.id}" onclick="selectProd(this)">
+                ${item.name}
+            </button>
+        `;
+    });
+}
+// 음료 선택
+function selectProd(ele) {
+    showPop('pop-buy');
+    const id = ele.getAttribute('data-id');
+    currentState(id);
+}
+
+// 음료 선택 팝업 > 상세 내용 뿌리기
+let currentProdId = '';
+function currentState(target) {
+    const id = Number(target); // 문자열로 받은 인자값 숫자로 변환
+    const selected = products.find(p => p.id === id); // products 배열에서 id 일치하는 제품 찾기
+    document.querySelector('#state-box').innerHTML = `
+        <dt>선택 음료</dt>
+        <dd>${selected.name}</dd>
+        <dt>개당 금액</dt>
+        <dd>${selected.price.toLocaleString()}원</dd>
+        <dt>현재 재고</dt>
+        <dd id="prod-stock">${selected.stock}</dd>
+    `;
+    currentProdId = selected;
+}
+
+// 음료 선택 팝업 > 저장
+let input = document.querySelector('#prod-count');
+function buyProd() {
+    let inputValue = input.value;
+    let isValid = true;
+
+    if (inputValue.trim().length === 0) {
+        alert('개수를 입력하세요.');
+        isValid = false;
+    } else if (currentProdId.stock < inputValue) {
+        alert(`⚠️ 재고 부족 - 현재 ${currentProdId.name} 재고는 ${currentProdId.stock}개입니다.`);
+        isValid = false;
+    }
+
+    if (isValid) {
+        document.querySelector('#prod-result').textContent = `
+            ${currentProdId.name} ${inputValue}개가 판매되었습니다.
+            (${(currentProdId.price * inputValue).toLocaleString()}원)`;
+        document.querySelector('#state-box #prod-stock').style.color = '#007bff';
+        document.querySelector('#state-box #prod-stock').textContent = currentProdId.stock - Number(inputValue);
+        currentProdId.stock -= Number(inputValue);
+        currentProdId.revenue += currentProdId.price * inputValue;
+
+        input.value = '';
+        input.focus();
+        console.log('result', products);
+    }
+    console.log('수익', currentProdId.revenue);
+}
+function closeBuyPop() {
+    hidePop();
+    if (!(input.value.trim().length === 0)) {
+        document.querySelector('#prod-count').value = '';
+        document.querySelector('#prod-result').textContent = '';
+        document.querySelector('#state-box #prod-stock').style.color = '';
+    }
+}
+
+
+/**
+ * 관리자 
+ */
+// 테이블 뿌리기
+function renderTable() {
+    const tbody = document.querySelector('[data-id="table-tbody"]');
+    tbody.innerHTML = '';
+
+    // 각 product마다 tr 추가
+    products.forEach((item, idx) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${item.name}</td> 
+                <td>${item.price.toLocaleString()}원</td>
+                <td data-id="td-stock-${idx}">${item.stock}</td>
+            </tr>
+        `;
+    });
+}
+
+// 1. 재고 변경 팝업
+function renderStockPop() {
+    const popStock = document.querySelector('#stock-box');
+    let html = '';
+    products.forEach((item, idx) => {
+        html += `
+            <div class="list-item">
+                <strong>${item.name}</strong>
+                <input type="number" id="stock-input-${idx}" value="${item.stock}" />
+            </div>
+        `;
+    });
+    popStock.innerHTML = html;
+    showPop('pop-stock');   
+}
+
+// 1. 재고 변경 팝업 > 저장
+function saveStockPop() {
+    products.forEach((item, idx) => {
+        const input = document.querySelector(`#stock-input-${idx}`);
+        const newValue = Number(input.value);
+        if (!isNaN(newValue) && newValue >= 0) {
+        item.stock = newValue;
+        }
+    });
+    renderTable();
+    hidePop();
+}
+
+// 2. 제품 변경 팝업 > 테이블 뿌리기
+function renderPopupTable() {
+    const tbody = document.querySelector('.pop [data-id="table-tbody"]');
+    tbody.innerHTML = '';
+
+    products.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${item.name}</td>
+            <td>${item.price.toLocaleString()}원</td>
+            <td>${item.stock}</td>
+            <td><button type="button" id="" onclick="removeProd(this)";>삭제</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 2. 제품 변경 팝업 > 랜딩
+function renderProdPop() {
+    showPop('pop-prod');
+    renderPopupTable();
+}
+
+// 2. 제품 변경 팝업 > 추가
+function addProd() {
+    if (!(products.length >= 5)) {
+        const inputs = document.querySelectorAll('#add-form input');
+
+        // input 값을 배열로 추출해서 빈 값이 있는지 확인
+        const isAnyEmpty = Array.from(inputs).some(input => input.value.trim() === '');
+
+        if (isAnyEmpty) {
+            alert('모든 값을 입력해주세요!');
+            return;
+        }
+
+        const newProduct = {
+            id: products.length+1,
+            name: inputs[0].value,
+            price: parseInt(inputs[1].value, 10),
+            stock: parseInt(inputs[2].value, 10),
+            revenue: 0,
+        };
+
+        products.push(newProduct);
+        console.log('last products', products);
+
+        // 입력창 초기화
+        inputs.forEach(input => input.value = '');
+
+        renderTable();
+        renderPopupTable();
+        
+    } else {
+        alert('제품은 최대 5개까지만 등록할 수 있습니다.\n기존 제품을 삭제한 후 등록해주세요.');
+        return;
+    }
+
+    
+}
+
+// 2. 제품 변경 팝업 > 삭제
+function removeProd(target) {
+    const tr = target.parentElement.parentElement;
+    const tbody = tr.parentElement;
+
+    // 몇 번째 tr인지 index 구하기
+    const index = Array.from(tbody.children).indexOf(tr); // ← 이게 핵심!
+
+    // products에서 해당 index 제거
+    products.splice(index, 1);
+
+    // 새로 index번호 부여
+    products.forEach((item, idx) => {
+        item.id = idx + 1;
+    });
+
+    // DOM에서 삭제
+    tr.remove();
+
+    renderTable();
+    renderPopupTable();
+
+    console.log('삭제 후 products:', products);
+}
+
+// 3. 수익 보기 팝업
+function renderRevenue() {
+    const popRev = document.querySelector('#rev-box');
+    let html = '';
+    let totalRevenue = 0; 
+
+    products.forEach((item) => {
+        html += `
+            <div class="list-item">
+                <strong>${item.name}</strong>
+                <span>${item.revenue.toLocaleString()}</span>
+            </div>
+        `;
+        totalRevenue += item.revenue;
+    });
+    popRev.innerHTML = html;
+
+    document.querySelector('#total').innerHTML = `
+        <div class="list-item">
+            <strong>총합</strong>
+            <span>${totalRevenue.toLocaleString()}</span>
+        </div>
+    `;
+
+    showPop('pop-revenue');   
+}
+</script>
+</html>
