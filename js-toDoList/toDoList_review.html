@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: 5%;
+        padding-right: 5%;
+        height: 100%;
+        background-color: rgb(255, 243, 217);
+      }
+
+      .container {
+        max-width: 650px;
+        padding: 30px;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .work-status {
+        display: flex;
+        justify-content: space-between;
+        background-color: #f8f8f8;
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .work-status p {
+        position: relative;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 0;
+      }
+      .work-status p:after {
+        content: "|";
+        position: absolute;
+        right: 0;
+        opacity: 0.2;
+      }
+      .work-status p:last-child:after {
+        display: none;
+      }
+
+      .todo-input {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .todo-search {
+        width: calc(100% - 150px);
+      }
+      .todo-search input::placeholder {
+        color: #ccc;
+      }
+
+      .todo {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e7e7e7;
+        padding: 10px 0;
+      }
+      .todo:nth-child(even) {
+        background-color: rgb(245, 245, 245);
+      }
+      .item1 {
+        width: 40px;
+      }
+      .item2 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: calc(100% - 40px - 100px);
+      }
+      .item2 p {
+        margin-bottom: 0;
+      }
+      .item3 {
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section class="contents">
+        <header class="header mb-3">
+          <p>TodoList</p>
+        </header>
+        <section class="work-status mb-3">
+          <p>한 일 : <span id="todoCount">0</span>건</p>
+          <p>한 일 : <span id="doneCount">0</span>건</p>
+          <p>달성률 : <span id="donePercent">0</span>%</p>
+        </section>
+        <section class="todo-input mb-4">
+          <div class="todo-search">
+            <input
+              type="text"
+              class="form-control"
+              id="inputTodo"
+              placeholder="내용"
+            />
+          </div>
+          <div class="todo-btn">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="createTodo();"
+            >
+              등록
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              onclick="allCheckTodo();"
+            >
+              일괄 완료
+            </button>
+          </div>
+        </section>
+        <section class="todo-list"></section>
+      </section>
+    </main>
+
+    <!-- template -->
+    <template id="todoTemplate">
+      <div class="todo">
+        <div class="item1">
+          <input type="checkbox" id="" name="" />
+        </div>
+        <div class="item2">
+          <p id="todoJob"></p>
+        </div>
+        <div class="item3 text-end">
+          <button type="button" class="btn btn-sm btn-success">완료</button>
+          <button type="button" class="btn btn-sm btn-danger">삭제</button>
+        </div>
+      </div>
+    </template>
+  </body>
+
+  <script>
+    const createTodo = () => {
+      const inputText = document.querySelector("#inputTodo");
+
+      if (inputText.value.trim().length === 0) {
+        alert("할일을 입력하십시오");
+        inputText.focus();
+        return false;
+      }
+
+      const commonTemplate = document.querySelector("#todoTemplate"); // 템플릿 요소 가져오기
+      const todoTemplate = commonTemplate.content.cloneNode(true); // 복사해서 사용
+
+      // 할 일 만들기
+      drawTodoList(inputText.value, todoTemplate);
+    };
+
+    const allCheckTodo = () => {
+      const todoList = document.querySelectorAll(".todo-list .todo");
+      // 필터 걸어야 함... 근데 todoList는 순수 배열이 아님... 배열로 변경해줘야 함
+      // nodeList -> node를 지니는 배열로 변경 후 filter 사용
+      const doList = Array.from(todoList).filter(
+        (todo) => !todo.classList.contains("complete")
+      );
+
+      if (doList.length === 0) {
+        alert("일괄처리할 일들을 만들어주세요!");
+        return false;
+      }
+
+      doList.forEach((obj) => {
+        const checkbox = obj.querySelector('input[type="checkbox"]');
+        const todoItem = obj.querySelector("#todoJob");
+        const doneBtn = obj.querySelector(".btn-success");
+
+        todoItem.style = "text-decoration : line-through";
+        doneBtn.disabled = true;
+        checkbox.checked = true;
+        checkbox.disabled = true;
+
+        obj.classList.add("complete");
+      });
+
+      changeStatus(); // 상태 업데이트
+    };
+
+    // 할일 목록 그리기
+    function drawTodoList(todo, template) {
+      const element = template.firstElementChild;
+
+      const checkbox = element.querySelector('input[type="checkbox"]');
+      const todoItem = element.querySelector("#todoJob");
+      const doneBtn = element.querySelector(".btn-success");
+      const delBtn = element.querySelector(".btn-danger");
+
+      checkbox.name = "todoChk";
+      todoItem.textContent = todo;
+
+      const todoList = document.querySelector(".todo-list");
+      todoList.appendChild(element);
+
+      doneBtn.addEventListener("click", (e) => {
+        todoItem.style.textDecoration = "line-through";
+        doneBtn.disabled = true;
+
+        // todo 목록 영역 최상위 가져오기
+        const todoDiv = e.currentTarget.closest(".todo");
+        todoDiv.classList.add("complete");
+        checkbox.checked = true;
+        checkbox.disabled = true;
+
+        // 완료 시 변경
+        changeStatus();
+      });
+
+      delBtn.addEventListener("click", (e) => {
+        const isConfirm = confirm("정말 삭제할래?");
+        if (isConfirm) {
+          const todoDiv = e.currentTarget.closest(".todo");
+          todoDiv.remove();
+
+          // 삭제 시 변경
+          changeStatus();
+        }
+      });
+
+      // 완료 시 변경
+      changeStatus();
+    }
+
+    function changeStatus() {
+      // 전체 리스트 가져오기
+      const todoList = document
+        .querySelector(".todo-list")
+        .querySelectorAll(".todo");
+
+      // 완료한 일 리스트 가져오기
+      const doneList = document
+        .querySelector(".todo-list")
+        .querySelectorAll(".todo.complete");
+
+      const allTodoCount = todoList.length;
+      const doneTodoCount = doneList.length;
+
+      const percent = ((doneTodoCount / allTodoCount) * 100).toFixed(2);
+
+      const todoSpan = document.querySelector("#todoCount");
+      const doneSpan = document.querySelector("#doneCount");
+      const percentSpan = document.querySelector("#donePercent");
+
+      todoSpan.textContent = allTodoCount - doneTodoCount;
+      doneSpan.textContent = doneTodoCount;
+      percentSpan.textContent = parseFloat(percent); // 소수점이 .00이면 생략
+    }
+  </script>
+</html>
