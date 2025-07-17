@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계좌 관리 프로그램(선생님 ver)</title>
+    <style>
+        html, body {
+            height: 100%;
+            background: #f8f9fb;
+            color: #222;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {-webkit-appearance: none;}
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {-moz-appearance: textfield;}
+        input, button {
+            outline: 0;
+            border: none;
+            border-radius: 0;
+            font-family: inherit;
+        }
+        button { background-color: transparent; cursor: pointer; transition: box-shadow 0.15s; }
+        ul, li {list-style: none;}
+        #wrap {
+            height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(140deg, #e9eefa 0%, #f8f9fb 100%);
+        }
+        #container {
+            padding: 36px 32px;
+            width: 420px; min-height: 560px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+            display: flex; flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 28px;
+            transition: box-shadow .18s;
+            border: 1px solid #f0f3fa;
+        }
+        .tit {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #202261;
+            letter-spacing: -1px;
+        }
+        .srh-wrap {
+            display: flex; gap: 8px; margin-bottom: 0;
+        }
+        .ipt[type="number"], .ipt[type="text"] {
+            padding: 0 10px; height: 38px; line-height: 38px;
+            border: 1.2px solid #e0e6f5;
+            border-radius: 8px;
+            font-size: 15px;
+            width: 100%;
+            background: #f7f9fc;
+            transition: border-color 0.16s;
+        }
+        .ipt[type="text"], .ipt[type="number"] {min-width: 0;}
+        .ipt:focus { border-color: #4c61e9; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 500;
+            min-width: 70px; height: 38px; line-height: 38px; padding: 0 16px;
+            border-radius: 9px;
+            background: #e8f0ff;
+            color: #2b5be7;
+            transition: background .15s, color .13s, box-shadow 0.14s;
+            box-shadow: 0 2px 8px 0 rgba(44,81,255,0.04);
+            border: 1px solid #e8f0ff;
+        }
+        .btn:hover, .btn:focus {
+            background: #dde6fa; color: #1a238c;
+            box-shadow: 0 2px 14px 0 rgba(44,81,255,0.08);
+            border: 1px solid #c8d3fa;
+        }
+        .btn-util {
+            min-width: 108px; font-size: 16px; font-weight: 600;
+            padding: 14px 0; border-radius: 13px;
+            background: #f7f9fc; color: #4263eb;
+            transition: background .14s, color .14s, box-shadow .14s;
+            box-shadow: 0 1px 7px 0 rgba(66,99,235,0.05);
+            border: 1.2px solid #f0f3fa;
+        }
+        .btn.deposit { background: #ebfbee; color: #2b8555; }
+        .btn.withdraw { background: #fffbe6; color: #b49c35; }
+        .btn.delete { background: #fff0f0; color: #e23e57; }
+        .btn.deposit:hover, .btn.deposit:focus { background: #d5f4df; color: #226c3c; }
+        .btn.withdraw:hover, .btn.withdraw:focus { background: #fff1b3; color: #8a7315; }
+        .btn.delete:hover, .btn.delete:focus { background: #ffe2e2; color: #b60000; }
+        .srh-result {
+            width: 100%; padding: 22px;
+            background-color: #f6f8fd;
+            border-radius: 13px;
+            border: 1px solid #e0e6f5;
+            box-shadow: 0 1px 10px 0 rgba(44,81,255,0.06);
+        }
+        .srh-top {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .srh-top strong {
+            font-size: 16px; color: #29307a; letter-spacing: -0.5px;
+        }
+        .sum-price { font-size: 12px; color: #2b2b2b; }
+        .sum-price span { font-size: 15px; font-weight: 700; color: #3c68e1;}
+        .radio-wrap {
+            display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 0 0;
+        }
+        .radio-item input[type="radio"] { display: none; }
+        .radio-item label {
+            display: block; min-width: 140px; padding: 10px 13px;
+            border-radius: 8px; background: #f5f6fa; color: #222;
+            font-size: 14px; text-align: left; cursor: pointer;
+            border: 1.3px solid #f5f6fa;
+            transition: all 0.13s;
+            box-shadow: 0 1px 7px 0 rgba(32,34,97,0.06);
+            margin-bottom: 0;
+        }
+        .radio-item input[type="radio"]:checked + label {
+            background: #202261; color: #fff; border: 1px solid #202261;
+        }
+        .radio-item input[type="radio"]:checked + label small span {
+            color: #fff;
+        }
+        .radio-item .price {font-size: 12px;}
+        .radio-item .price span {font-size: 14px; font-weight: 500;}
+        .radio-item small { font-size: 12px; color: #888; }
+        .radio-item small span { font-weight: 500; }
+        .srh-btn { width: 100%; margin-top: 6px; }
+        .srh-btn-wrap {
+            margin-top: 22px; display: flex;
+            align-items: center; justify-content: center; gap: 14px;
+        }
+        .src-ipt {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin-bottom: 0;
+        }
+        .wallet {
+            padding: 22px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; background-color: #f6f8fd;
+            border-radius: 13px;
+            border: 1px solid #e0e6f5;
+            box-shadow: 0 1px 8px 0 rgba(44, 81, 255, 0.03);
+            margin-top: 4px;
+        }
+        .wallet strong { font-size: 16px; color: #29307a; }
+
+        .text-end {text-align: end;}
+        .account-list { display: flex; flex-direction: column; width: 100%; height: 500px; border-radius: 10px; padding: 1rem; gap: 10px; background-color: #f2f2f2; }
+        .account-box { width: 100%; height: 30%; border-radius: 10px; display: flex; padding: 1rem; gap: 15px; background-color: #fff; box-shadow: 1px 1px 1px 2px #d4d4d4; }
+        .accout-info { display: flex; gap: 5px; flex-direction: column; justify-content: center;  }
+        .btn-wrap {display: flex; align-items: center; justify-content: center; gap: 5px;}
+        .btn:disabled {background: #ddd; color: #eee;}
+        .btn:disabled:focus,  .btn:disabled:hover {
+            background: #ddd; color: #eee; border: none; cursor: unset; box-shadow: unset; transition: unset;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrap">
+        <div id="container" class="flex-start">
+            <div class="srh-wrap">
+                <input type="text" class="ipt" id="searchText"/>
+                <button type="button" class="btn btn-srh" onclick="searchAccounter();">검색</button>
+            </div>
+            <div class="text-end">
+                잔액 <span id="balance">0</span>원
+            </div>
+            <div class="account-list"></div>
+            <div class="srh-wrap">
+                <input type="number" class="ipt" id="money"/>
+            </div>
+            <div class="btn-wrap">
+                <button type="button" class="btn btn-util deposit" onclick="deposit();" disabled>입금</button>
+                <button type="button" class="btn btn-util withdraw" onclick="withdraw();"  disabled>출금</button>
+                <button type="button" class="btn btn-util delete" onclick="cancelAccount();"  disabled>해지</button>
+
+            </div>
+        </div>
+    </div>
+    <template id="account-template">
+        <div class="account-box">
+            <input type="radio">
+            <div class="accout-info">
+                <span id="name">1</span>
+                <span id="type">2</span>
+                <span id="balance">3</span>
+            </div>
+        </div>
+    </template>
+</body>
+<script src="./account2.js"></script>
+<script>
+
+    const bankArr = [
+        new Accounter('홍려경1').init(),
+        new Accounter('홍려경2').init(),
+        new Accounter('홍려경3').init()
+    ]
+
+    console.log(bankArr);
+
+    let selectedAcc = '';
+    // 검색한 사람의 계좌 정보 출력
+    const searchAccounter = () => {
+        const searchText = document.querySelector('#searchText');
+
+        if(searchText.value.trim().length === 0) {
+            alert('계좌 검색할 사람을 입력하십시오.');
+            return false;
+        }
+        // 기존 리스트 삭제
+        clearList();
+
+        const searchName = searchText.value;
+        // 검색하기(얕은 복사)
+        selectedAcc = bankArr.find(ac => ac.name === searchName);
+
+        if(!selectedAcc) {
+            alert('검색한 대상이 없습니다.');
+            return false;
+        }
+
+        drawAccounts();
+    }
+
+    // 계좌 리스트, 잔액 초기화 함수
+    function clearList() {
+        const accountList = document.querySelector('.account-list');
+        const balanceText = document.querySelector('#balance');
+        // 내용이 있으면 지움
+        if(accountList) {
+            accountList.innerHTML= '';
+        }
+        balanceText.textContent = 0;
+
+    }
+
+    // 검색된 사람의 계좌 리스트 그리기
+    function drawAccounts(selectedIndex) {
+
+        clearList();
+        const accountList = document.querySelector('.account-list');
+        const balanceText = document.querySelector('#balance');
+
+        let totalBalance = 0;
+        selectedAcc.accounts.forEach((account, index) => {
+            const template = document.querySelector('#account-template');
+            // 복사
+            const accountBox = template.content.cloneNode(true);
+
+            const radio = accountBox.querySelector('input[type="radio"]');
+            const nameSpan = accountBox.querySelector('#name');
+            const typeSpan = accountBox.querySelector('#type');
+            const balanceSpan = accountBox.querySelector('#balance');
+
+            // console.log(selectedIndex);
+
+            // 라디오 버튼 index 값이 있을 경우만 
+            if(typeof selectedIndex != 'undefined') {
+                if(selectedIndex) {
+                    if(Number(selectedIndex) === index) {
+                        radio.checked = true;
+                    }
+                }
+            }
+            
+
+            radio.id = `account_${selectedAcc.index}`;
+            radio.value = index;
+            radio.name = 'account';
+
+            nameSpan.textContent = `이름 : ${selectedAcc.name}`;
+            typeSpan.textContent = `타입 : ${account.type}`;
+            balanceSpan.textContent = `잔액 : ${account.balance}`;
+            totalBalance += account.balance;
+
+            // 라디오 버튼마다 클릭 이벤트 부여하기
+            radio.addEventListener('click', (e) => {
+                changeButtonStatus(account.type);
+            });
+
+            accountList.appendChild(accountBox);
+
+        })
+        balanceText.textContent = totalBalance;
+    }
+
+    // 선택된 계좌 타입별로 버튼 상태 처리
+    function changeButtonStatus(type) {
+        const depositBtn = document.querySelector('.btn.deposit');
+        const withdrawBtn = document.querySelector('.btn.withdraw');
+        const cancelBtn = document.querySelector('.btn.delete');
+
+        depositBtn.disabled = false;
+
+        if(type === '적금') {
+            cancelBtn.disabled = false;
+            withdrawBtn.disabled = true;
+        }else {
+            cancelBtn.disabled = true;
+            withdrawBtn.disabled = false;
+        }
+    }
+
+    const deposit = () => {
+        const balanceText = document.querySelector('#balance');
+        const money = document.querySelector('#money');
+
+
+        if(money.value.trim().length === 0) {
+            alert('입금할 금액을 입력하십시오.');
+            return false;
+        }
+
+        // balanceText.textContent = Number(balanceText.textContent) + Number(money.value);
+        // console.log(Number(balanceText.textContent) );
+
+        const selectedIndex = document.querySelector('input[type="radio"]:checked').value;
+        const account = selectedAcc.accounts[selectedIndex];
+        account.balance = account.balance + Number(money.value);
+
+        drawAccounts(selectedIndex);
+
+    }
+
+    const withdraw = () => {
+        const balanceText = document.querySelector('#balance');
+        const money = document.querySelector('#money');
+
+
+        if(money.value.trim().length === 0) {
+            alert('입금할 금액을 입력하십시오.');
+            return false;
+        }
+
+        // account.balance += Number(moneyInput.value);
+
+        // // 전체 잔액 다시 계산
+        // const totalBalance = selectedAcc.accounts.reduce((sum, acc) => sum + acc.balance, 0);
+        // document.querySelector('#balance').textContent = totalBalance;
+
+        // balanceText.textContent = Number(balanceText.value) - Number(money.value);
+
+        const selectedIndex = document.querySelector('input[type="radio"]:checked').value;
+        const account = selectedAcc.accounts[selectedIndex];
+        account.balance = account.balance - Number(money.value);
+
+        drawAccounts(selectedIndex);
+
+    }
+
+    const cancelAccount = () => {
+        const selected = document.querySelector('input[type="radio"]:checked');
+        const isConfrim = confirm('정말 적금을 해지하시겠습니까?');
+
+        if(isConfrim) {
+            // 선택된 계좌에서 마지막 계좌를 지움
+            const deleted = selectedAcc.accounts.splice(2, 1);
+            
+            // 검색하기(얕은 복사) 가 없다면
+            // for(i = 0; i < bankArr.length; i++) {
+            //     const obj = bankArr[i];
+            //     if(obj.name === selectedAcc.name) {
+            //         obj.accounts = selectedAcc.accounts;
+            //         break;
+            //     }
+            // }
+            const balanceText = document.querySelector('#balance');
+            balanceText.textContent = Number(balanceText.value) - Number(deleted.balance);
+
+            drawAccounts();
+        }
+
+        console.log(selectedAcc);
+    }
+
+</script>
+</html>

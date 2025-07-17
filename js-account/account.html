@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>김선경 - 계좌 찾기</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Pretendard Variable', sans-serif;
+    }
+    html, body {
+      color: #222;
+      background: #f4f6f8;
+      font-size: 14px;
+    }
+    .title {
+      text-align: center;
+    }
+    #container {
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 32px 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    input {
+      cursor: pointer;
+      outline: none;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
+      color: #111827;
+      background-color: #f8fafc;
+      border-radius: 5px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input[type="text"]:focus {
+      border-color: #2f80ed;
+      box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
+    }
+    input[type="text"]::placeholder {color: #ccc;}
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #222;
+      transition: opacity 0.3s ease;
+    }
+    .btn-deposit {background-color: #27ae60;}
+    .btn-withdraw {background-color: #f2994a;}
+    .btn-close {background-color: #eb5757;}
+    .btn:hover {opacity: 0.75;}
+    .btn:disabled {
+      background-color: #cfd8e3;
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .account {margin-top: 50px;}
+    .srch {
+      display: flex;
+      gap: 0;
+    }
+    .srch input[type="text"] {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      flex: 1;
+    }
+    .srch .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f0f4f8;
+      font-size: 16px;
+    }
+    .total dt {color: #444;}
+    .total dd {
+      font-weight: bold;
+      color: #2f80ed;
+    }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      background-color: #eaeaea;
+    }
+    .list .alert-txt {
+      text-align: center;
+      font-size: 12px;
+      color: #696969;
+    }
+    .list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 20px;
+      list-style: none;
+      border-radius: 12px;
+      background-color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .list li:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+    .list li.active {
+      border: 2px solid #2f80ed;
+    }
+    .ac-list {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      width: 100%;
+    }
+    .ac-list input[type="radio"] {
+      margin-top: 4px;
+      accent-color: #2f80ed;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .ac-list label {
+      flex: 1;
+      cursor: pointer;
+    }
+    .ac-list dl {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ac-list dt {
+      width: 80px;
+      color: #888;
+      font-weight: 500;
+    }
+    .ac-list dd {
+      width: calc(100% - 80px - 10px);
+      color: #222;
+      font-weight: 700;
+    }
+    .btn-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-wrap .btn {flex: 1 1 30%;}
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <main id="container">
+      <h1 class="title">💰 계좌 찾기 💰</h1>
+      <div class="account">
+        <!-- 검색 -->
+        <div class="srch">
+          <input type="text" id="ipt-srchName" name="ipt-srchName" onkeydown="enterKey(event);" placeholder="이름" />
+          <button type="button" class="btn" onclick="search();">검색</button>
+        </div>
+
+        <!-- 총액 -->
+        <dl class="total">
+          <dt>총액</dt>
+          <dd id="acc-total"></dd>
+        </dl>
+
+        <!-- 결과 리스트 -->
+        <div class="list" id="list">
+          <ul>
+            <!-- innerHTML js -->
+          </ul>
+        </div>
+        
+        <!-- 버튼 -->
+        <div class="btn-wrap">
+          <button type="button" class="btn btn-deposit" onclick="depositAccount();" id="btn-deposit" disabled>입금</button>
+          <button type="button" class="btn btn-withdraw" onclick="withdrawAccount();" id="btn-withdraw" disabled>출금</button>
+          <button type="button" class="btn btn-close" onclick="closeAccount();" id="btn-close" disabled>해지</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+
+<script>
+// 클래스 생성
+class Account {
+  constructor (이름, 타입, 잔액) {
+    this.name = 이름;
+    this.type = 타입;
+    this.balance = 잔액;
+  }
+}
+
+// 사용자 계좌정보
+const account = [
+  new Account('김철수', '예금', 100000),
+  new Account('김철수', '예금', 3000000),
+  new Account('김철수', '적금', 200000),
+  new Account('홍길동', '예금', 400000),
+  new Account('홍길동', '예금', 1000),
+  new Account('홍길동', '적금', 10000000),
+  new Account('이미나', '예금', 30000),
+  new Account('이미나', '예금', 20000),
+  new Account('이미나', '적금', 50000),
+];
+console.log('전체 어카운트', account);
+
+// 검색
+const input = document.querySelector('#ipt-srchName');
+function search() {
+  input.value = input.value.replace(/[^가-힣]/g, "");
+  if (input.value.trim().length === 0) {
+    alert('이름을 입력해주세요.');
+    input.focus();
+  } else {
+    renderAccountList();
+  }
+}
+
+// 총합
+const balanceTotal = document.querySelector('#acc-total');
+
+// 버튼 클릭 유무 체크
+let hasChk = false; 
+
+// 검색 후 리스트 띄우기
+function renderAccountList() {
+  const list = document.querySelector('.list');
+  let tempHTML = ''; // 임시 변수
+  let sum = 0;
+  let hasResult = false;
+
+  // 리스트 리셋
+  list.innerHTML = '';
+
+  // 리스트 임시변수에 담아놓기
+  account.forEach((item, idx) => {
+    if (input.value.trim() === item.name) {
+      hasResult = true;
+      tempHTML += `
+        <li>
+          <div class="ac-list">
+            <input type="radio" id="acc-${idx}" name="acc" onclick="statusBtn(this)"/>
+            <label for="acc-${idx}">
+              <dl>
+                <dt>이름</dt>
+                <dd>${item.name}</dd>
+                <dt>예금 타입</dt>
+                <dd>${item.type}</dd>
+                <dt>잔액</dt>
+                <dd>${item.balance.toLocaleString()}</dd>
+              </dl>
+            </label>
+          </div>
+        </li>
+      `;
+      sum += item.balance;
+    }
+  });
+
+  // 리스트 뿌리기
+  list.innerHTML = tempHTML;
+  
+  const btns = document.querySelectorAll('.btn-wrap .btn');
+  btns.forEach((item) => {
+    item.disabled = true;
+    hasChk = false;
+  });
+
+  if (!hasResult) {
+    sum = 0;
+    document.querySelector('#acc-total').textContent = '';
+    document.querySelector('.list').innerHTML = `<p class="alert-txt">일치하는 계좌가 없습니다.</p>`;
+    input.focus();
+    return;
+  } 
+
+  // 총액 , 처리
+  balanceTotal.textContent = sum.toLocaleString();
+}
+
+// 버튼 제어
+function statusBtn(target) {
+  const li = document.querySelectorAll('.list li');
+  li.forEach((item) => item.classList.remove('active'));
+  target.closest('li').classList.add('active');
+
+  const id = Number(target.id.split('-')[1]);
+  
+  if (!hasChk) {
+    document.querySelector('#btn-deposit').disabled = false;
+    hasChk = true;
+  }
+
+  if (account[id].type === '적금') {
+    document.querySelector('#btn-close').disabled = false;
+    document.querySelector('#btn-withdraw').disabled = true;
+  } else {
+    document.querySelector('#btn-close').disabled = true; 
+    document.querySelector('#btn-withdraw').disabled = false; 
+  }
+}
+
+// 입/출/적 공통
+function handleComm(callback) {
+  const chkBox = document.querySelectorAll('input[name="acc"]:checked');
+  if (chkBox.length === 0) {
+    alert('리스트를 선택해주세요.');
+    return;
+  }
+
+  chkBox.forEach((item) => {
+    const id = Number(item.id.split('-')[1]);
+    const acc = account[id];
+    callback(acc, id);
+  });
+}
+
+// 입/출금 prompt alert common
+let promptValue; 
+function alertComm(action) {
+  promptValue = prompt(`${action} 금액을 입력해주세요.`);
+
+  if (promptValue === null) {
+    alert(`${action}을 취소하였습니다.`);
+    return;
+  } else if (promptValue.trim() === '') {
+    alert(`금액을 입력해주세요.`);
+    return;
+  } 
+
+  if (isNaN(promptValue)) {
+    alert('숫자만 입력 가능합니다.');
+    return;
+  }
+}
+
+// 입금
+function depositAccount() {
+  handleComm((acc, id) => {
+    alertComm('입금');
+
+    if (Number(promptValue) > 1000000) {
+      alert('입금 한도는 1,000,000원까지 입니다.');
+      return;
+    } else if (Number(promptValue <= 1000000)) {
+      acc.balance += Number(promptValue);
+      renderAccountList();
+    }
+  });
+
+  console.log('account',account);
+}
+
+// 출금
+function withdrawAccount() {
+  handleComm((acc, id) => {
+    alertComm('출금');
+
+    if (Number(promptValue) <= acc.balance) { // 입력 금액이 보유 금액보다 같거나 적은 경우
+      acc.balance -= Number(promptValue);
+      renderAccountList();
+    } else if (Number(promptValue) > 1000000) { // 입력 금액이 100만원보다 많은 경우
+      alert('출금 한도는 1,000,000원까지 입니다.');
+      return;
+    } else if (Number(promptValue) > acc.balance) { // 입력 금액이 보유 금액보다 많은 경우
+      alert(`잔액이 부족합니다. 현재 잔액 : ${acc.balance.toLocaleString()}원`);
+      return;
+    }
+
+    console.log('account',account);
+  });
+}
+
+// 해지
+function closeAccount() {
+  handleComm((acc, id) => {
+    const isTrue = confirm('이 계좌를 해지하시겠습니까?');
+    if (isTrue) {
+      account.splice(id, 1);
+    } else {
+      alert('해지를 취소하셨습니다.')
+    }
+    renderAccountList();
+  });
+
+  console.log('account',account);
+}
+
+const enterKey = (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    search();
+  }
+}
+</script>
+</html>
